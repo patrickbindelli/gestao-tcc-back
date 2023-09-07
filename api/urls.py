@@ -10,9 +10,9 @@ urlpatterns = [
     path("research/", include("research.urls"), name="research"),
     path("utilities/", include("utilities.urls"), name="utilities"),
     path(
-        "schema/redoc/",
-        SpectacularRedocView.as_view(url_name="schema"),
-        name="redoc",
+        "docs",
+        SpectacularRedocView.as_view(),
+        name="docs",
     ),
-    path("schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("docs/schema/", SpectacularAPIView.as_view(), name="schema"),
 ]
