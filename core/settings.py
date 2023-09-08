@@ -1,22 +1,27 @@
 import os
+from os import getenv
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-DEBUG = bool(os.environ.get("DEBUG", default=1))
-SECRET_KEY = os.environ.get("SECRET_KEY", "change_me")
+DEBUG = bool(getenv("DEBUG", default=1))
+SECRET_KEY = getenv("SECRET_KEY", "change_me")
 HASHID_FIELD_SALT = "a long and secure salt value that is not the same as SECRET_KEY"
 
 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",")
-ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS]
+ALLOWED_HOSTS = getenv(
+    "DJANGO_ALLOWED_HOSTS",
+    "http://localhost:3000, http://127.0.0.1:3000, http://localhost:8000, http://127.0.0.1:8000",
+).split(",")
 
-CORS_ORIGIN_WHITELIST = ("http://localhost:3000",)
+# CORS SETTINGS
+CORS_ALLOWED_ORIGINS = getenv(
+    "CORS_ALLOWED_ORIGINS", "http://localhost:3000, http://127.0.0.1:3000"
+).split(",")
 
-CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
-CORS_EXPOSE_HEADERS = ("Access-Control-Allow-Origin: http://localhost:3000",)
+
 
 # Application definition
 INSTALLED_APPS = [
@@ -79,12 +84,12 @@ WSGI_APPLICATION = "core.wsgi.application"
 # Database
 DATABASES = {
     "default": {
-        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.environ.get("SQL_DATABASE", BASE_DIR / "db.sqlite3"),
-        "USER": os.environ.get("SQL_USER", "user"),
-        "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
-        "HOST": os.environ.get("SQL_HOST", "localhost"),
-        "PORT": os.environ.get("SQL_PORT", "5432"),
+        "ENGINE": getenv("SQL_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": getenv("SQL_DATABASE", BASE_DIR / "db.sqlite3"),
+        "USER": getenv("SQL_USER", "user"),
+        "PASSWORD": getenv("SQL_PASSWORD", "password"),
+        "HOST": getenv("SQL_HOST", "localhost"),
+        "PORT": getenv("SQL_PORT", "5432"),
     }
 }
 
@@ -161,17 +166,17 @@ AUTH_USER_MODEL = "accounts.UserAccount"
 
 
 EMAIL_BACKEND = "django_ses.SESBackend"
-DEFAULT_FROM_EMAIL = os.environ.get(
+DEFAULT_FROM_EMAIL = getenv(
     "AWS_SES_FROM_EMAIL", default="patrickvenanbindelli@gmail.com"
 )
 
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", default="AKIAVETPSEYFIMFQGHHB")
-AWS_SECRET_ACCESS_KEY = os.environ.get(
+AWS_ACCESS_KEY_ID = getenv("AWS_ACCESS_KEY_ID", default="AKIAVETPSEYFIMFQGHHB")
+AWS_SECRET_ACCESS_KEY = getenv(
     "AWS_SECRET_ACCESS_KEY", default="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"
 )
-AWS_SES_REGION_NAME = os.environ.get("AWS_SES_REGION_NAME", default="eu-north-1")
+AWS_SES_REGION_NAME = getenv("AWS_SES_REGION_NAME", default="eu-north-1")
 AWS_SES_REGION_ENDPOINT = f"email.{AWS_SES_REGION_NAME}.amazonaws.com"
-AWS_SES_FROM_EMAIL = os.environ.get(
+AWS_SES_FROM_EMAIL = getenv(
     "AWS_SES_FROM_EMAIL", default="patrickvenanbindelli@gmail.com"
 )
 USE_SES_V2 = True
