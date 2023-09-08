@@ -164,19 +164,17 @@ DJOSER = {
 
 AUTH_USER_MODEL = "accounts.UserAccount"
 
-
+# EMAIL SETTINGS
 EMAIL_BACKEND = "django_ses.SESBackend"
-DEFAULT_FROM_EMAIL = getenv(
-    "AWS_SES_FROM_EMAIL", default="patrickvenanbindelli@gmail.com"
-)
-
-AWS_ACCESS_KEY_ID = getenv("AWS_ACCESS_KEY_ID", default="AKIAVETPSEYFIMFQGHHB")
-AWS_SECRET_ACCESS_KEY = getenv(
-    "AWS_SECRET_ACCESS_KEY", default="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"
-)
-AWS_SES_REGION_NAME = getenv("AWS_SES_REGION_NAME", default="eu-north-1")
+DEFAULT_FROM_EMAIL = getenv("AWS_SES_FROM_EMAIL")
+AWS_ACCESS_KEY_ID = getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = getenv("AWS_SECRET_ACCESS_KEY")
+AWS_SES_REGION_NAME = getenv("AWS_SES_REGION_NAME")
 AWS_SES_REGION_ENDPOINT = f"email.{AWS_SES_REGION_NAME}.amazonaws.com"
-AWS_SES_FROM_EMAIL = getenv(
-    "AWS_SES_FROM_EMAIL", default="patrickvenanbindelli@gmail.com"
-)
+AWS_SES_FROM_EMAIL = getenv("AWS_SES_FROM_EMAIL")
 USE_SES_V2 = True
+
+AUTH_COOKIE = "access"
+AUTH_COOKIE_ACCESS_MAX_AGE = 60 * 5
+AUTH_COOKIE_REFRESH_MAX_AGE = 60 * 60 * 24
+AUTH_COOKIE_SECURE = getenv("AUTH_COOKIE_SECURE", "True") == "True"
