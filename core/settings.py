@@ -1,19 +1,26 @@
+import environ
 import os
 from os import getenv
 from pathlib import Path
 
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Take environment variables from .env file
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 DEBUG = bool(getenv("DEBUG", default=1))
 SECRET_KEY = getenv("SECRET_KEY", "change_me")
 HASHID_FIELD_SALT = "a long and secure salt value that is not the same as SECRET_KEY"
 
 
-ALLOWED_HOSTS = getenv(
-    "DJANGO_ALLOWED_HOSTS",
-    "http://localhost:3000, http://127.0.0.1:3000, http://localhost:8000, http://127.0.0.1:8000",
-).split(",")
+ALLOWED_HOSTS = getenv("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
 
 # CORS SETTINGS
 CORS_ALLOWED_ORIGINS = getenv(
