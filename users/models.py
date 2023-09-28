@@ -31,15 +31,21 @@ class UserAccountManager(BaseUserManager):
         return user
 
 
-class UserAccount(AbstractBaseUser, PermissionsMixin):
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
-    email = models.EmailField(
-        verbose_name="Endereço de Email",
-        max_length=255,
-        unique=True,
+class Course:
+    SISTEMAS_DE_INFORMACAO = 1
+    ADMNISTRACAO = 2
+    ENGENHARIA_DE_PRODUCAO = 3
+    MATEMATICA = 4
+
+    COURSE_CHOICES = (
+        (SISTEMAS_DE_INFORMACAO, "Sistemas de Informação"),
+        (ADMNISTRACAO, "Admnistração"),
+        (ENGENHARIA_DE_PRODUCAO, "Engenharia de Produção"),
+        (MATEMATICA, "Matemáticca"),
     )
 
+
+class Role:
     STUDENT = 1
     TEACHER = 2
 
@@ -48,10 +54,29 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
         (TEACHER, "Professsor"),
     )
 
-    role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES, blank=True, null=True)
+
+class UserAccount(AbstractBaseUser, PermissionsMixin):
+    first_name = models.CharField(max_length=255, verbose_name="Primeiro Nome")
+    last_name = models.CharField(max_length=255, verbose_name="Sobrenome")
+    email = models.EmailField(
+        verbose_name="Endereço de Email",
+        max_length=255,
+        unique=True,
+    )
+
+    course = models.PositiveSmallIntegerField(
+        choices=Course.COURSE_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Curso",
+    )
+
+    role = models.PositiveSmallIntegerField(
+        choices=Role.ROLE_CHOICES, blank=True, null=True, verbose_name="Tipo de Usuário"
+    )
 
     is_active = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
 
     objects = UserAccountManager()
@@ -60,4 +85,4 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ["first_name", "last_name"]
 
     def __str__(self):
-        return self.email
+        return f"{self.first_name} {self.last_name}"

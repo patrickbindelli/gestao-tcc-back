@@ -1,17 +1,19 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
 from .views import (
-    InvitesAPIView,
-    InviteAPIView,
-    ThesisProjectsAPIView,
-    ThesisProjectAPIView,
+    InvitesViewSet,
+    ThesisProjectsViewSet,
 )
 
-# URLs para as funcionalidades relacionadas a convites e projetos de tese.
-# Cada endpoint permite listar, criar, recuperar, atualizar e excluir
-# convites e projetos de tese, conforme apropriado.
+from . import views
+
+router = DefaultRouter()
+
+router.register("invites", InvitesViewSet, basename="invites")
+router.register("projects", ThesisProjectsViewSet, basename="projects")
+
+
 urlpatterns = [
-    path("invites/", InvitesAPIView.as_view(), name="invites"),
-    path("invites/<int:pk>/", InviteAPIView.as_view(), name="invite"),
-    path("projects/", ThesisProjectsAPIView.as_view(), name="projects"),
-    path("projects/<int:pk>/", ThesisProjectAPIView.as_view(), name="project"),
+    path("", include(router.urls)),
 ]

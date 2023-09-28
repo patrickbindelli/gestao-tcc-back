@@ -1,17 +1,17 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from .views import (
-    UsefulFileAPIView,
-    UsefulFilesAPIView,
-    UsefulLinkAPIView,
-    UsefulLinksAPIView,
+    UsefulFilesViewSet,
+    UsefulLinksViewSet,
 )
 
-# URLs para as funcionalidades relacionadas a convites e projetos de tese.
-# Cada endpoint permite listar, criar, recuperar, atualizar e excluir
-# convites e projetos de tese, conforme apropriado.
+
+router = DefaultRouter()
+
+router.register("files", UsefulFilesViewSet, basename="files")
+router.register("links", UsefulLinksViewSet, basename="links")
+
+
 urlpatterns = [
-    path("files/", UsefulFilesAPIView.as_view(), name="invites"),
-    path("files/<int:pk>/", UsefulFileAPIView.as_view(), name="invite"),
-    path("links/", UsefulLinksAPIView.as_view(), name="invites"),
-    path("links/<int:pk>/", UsefulLinkAPIView.as_view(), name="invite"),
+    path("", include(router.urls)),
 ]

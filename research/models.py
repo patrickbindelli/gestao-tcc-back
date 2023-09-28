@@ -1,7 +1,8 @@
 import os
 from django.db import models
 from django.contrib.auth.models import User
-from accounts.models import UserAccount
+
+from users.models import UserAccount
 from django.core.exceptions import ValidationError
 from hashid_field import HashidAutoField
 
@@ -42,6 +43,10 @@ class ThesisProject(models.Model):
     invite = models.ForeignKey("Invite", on_delete=models.CASCADE)
 
     file = models.FileField(null=True, blank=True)
+
+    responsible = models.ForeignKey(
+        UserAccount, verbose_name=("Professor Responsável"), on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return self.title
@@ -118,7 +123,7 @@ class Invite(models.Model):
             self.type, "Tipo Desconhecido"
         )
         status = "Aceito" if self.accepted else "Pendente"
-        return f"Convite de {self.sender.username} para {self.receiver.username} - Tipo: {invite_type} - Status: {status}"
+        return f"Convite de {self.sender.first_name} {self.sender.last_name} para {self.receiver.first_name} {self.receiver.last_name} - Tipo: {invite_type} - Status: {status}"
 
     class Meta:
         verbose_name = "Convite"

@@ -1,8 +1,9 @@
 from django.contrib import admin
-from accounts.models import UserAccount
+from users.models import UserAccount, Role
 from .models import ThesisProject, Invite, FileVersion
 from django import forms
 from django.core.exceptions import ValidationError
+from django.contrib.admin import widgets
 
 
 class ThesisProjectForm(forms.ModelForm):
@@ -11,10 +12,10 @@ class ThesisProjectForm(forms.ModelForm):
         fields = "__all__"
 
     authors = forms.ModelMultipleChoiceField(
-        queryset=UserAccount.objects.filter(role=UserAccount.STUDENT),
+        queryset=UserAccount.objects.filter(role=Role.STUDENT),
     )
 
-    # advisor = forms.Widget(queryset=User.objects.filter(role=User.TEACHER))
+    # advisor = forms.Widget(queryset=UserAccount.objects.filter(role=Role.TEACHER))
 
     def clean(self):
         cleaned_data = super().clean()
@@ -24,7 +25,7 @@ class ThesisProjectForm(forms.ModelForm):
         defense_date = cleaned_data.get("defense_date")
         type = cleaned_data.get("type")
 
-        if advisor and advisor.role != UserAccount.TEACHER:
+        if advisor and advisor.role != Role.TEACHER:
             raise ValidationError(
                 "O orientador deve ser um professor (com papel TEACHER)."
             )
@@ -88,8 +89,26 @@ accept_invite_and_create_research.short_description = (
 )
 
 
+class InviteForm(forms.ModelForm):
+    class Meta:
+        model = Invite
+        fields = "__all__"
+
+    # sender = forms.ModelChoiceField(
+    #     queryset=UserAccount.objects.exclude(role=Role.STUDENT),
+    #     widget=widgets.ForeignKeyRawIdWidget(),
+    # )
+
+    # receiver = forms.ModelChoiceField(
+    #     queryset=UserAccount.objects.filter(role=Role.STUDENT),
+    # )
+
+
 class InviteAdmin(admin.ModelAdmin):
     actions = [accept_invite_and_create_research]
+    form = InviteForm
+
+    # raw_id_fields = ["sender", "receiver"]
 
 
 admin.site.register(ThesisProject, ThesisProjectAdmin)
