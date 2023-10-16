@@ -58,17 +58,11 @@ class Role:
 class UserAccount(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=255, verbose_name="Primeiro Nome")
     last_name = models.CharField(max_length=255, verbose_name="Sobrenome")
+
     email = models.EmailField(
         verbose_name="Endereço de Email",
         max_length=255,
         unique=True,
-    )
-
-    course = models.PositiveSmallIntegerField(
-        choices=Course.COURSE_CHOICES,
-        blank=True,
-        null=True,
-        verbose_name="Curso",
     )
 
     role = models.PositiveSmallIntegerField(
@@ -84,5 +78,39 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.role == Role.STUDENT:
+            Student.objects.get_or_create(user=self)
+        elif self.role == Role.TEACHER:
+            Teacher.objects.get_or_create(user=self)
+        elif self.role is None:
+            pass
+
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+
+class Student(models.Model):
+    course = models.PositiveSmallIntegerField(
+        choices=Course.COURSE_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Curso",
+    )
+
+    user = models.OneToOneField(
+        UserAccount, blank=False, null=False, on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
+
+
+class Teacher(models.Model):
+    user = models.OneToOneField(
+        UserAccount, blank=False, null=False, on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"

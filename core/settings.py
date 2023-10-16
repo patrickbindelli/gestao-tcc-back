@@ -21,7 +21,7 @@ SECRET_KEY = getenv("SECRET_KEY", "change_me")
 HASHID_FIELD_SALT = "a long and secure salt value that is not the same as SECRET_KEY"
 
 
-ALLOWED_HOSTS = getenv("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
+ALLOWED_HOSTS = getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 # CORS SETTINGS
 CORS_ALLOWED_ORIGINS = getenv(

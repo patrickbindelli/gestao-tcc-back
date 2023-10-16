@@ -1,11 +1,77 @@
+from typing import Any
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
+from django.http.request import HttpRequest
 
-from .models import UserAccount
+from .models import UserAccount, Student, Teacher, Role
+
+
+class StudentAdmin(admin.ModelAdmin):
+    list_display = ["user", "course"]
+
+    search_fields = [
+        "user__first_name",
+    ]
+
+    # i should only be able to add new user and not select an existing one
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.base_fields["user"].widget.can_add_related = True
+        form.base_fields["user"].widget.can_change_related = False
+        return form
+
+    add_fieldsets = [
+        (
+            None,
+            {
+                "classes": ["wide"],
+                "fields": [
+                    "user",
+                    "course",
+                ],
+            },
+        ),
+    ]
+
+    def get_readonly_fields(self, request: HttpRequest, obj: Student):
+        readonly = []
+
+        if obj:
+            readonly.append("user")
+
+        return readonly
+
+
+class TeacherAdmin(admin.ModelAdmin):
+    readonly_fields = ["user"]
+    search_fields = [
+        "user__first_name",
+    ]
+
+
+class StudentInline(admin.StackedInline):
+    model = Student
+    can_delete = False
+    extra = 0
+    max_num = 1
+    min_num = 1
+    verbose_name = "Estudante"
+    fk_name = "user"
+
+
+class TeacherInline(admin.StackedInline):
+    model = Teacher
+    can_delete = False
+    extra = 0
+    max_num = 1
+    min_num = 1
+    verbose_name = "Professor"
+    fk_name = "user"
 
 
 class UserCreationForm(forms.ModelForm):
@@ -58,7 +124,7 @@ class UserAccountAdmin(BaseUserAdmin):
     fieldsets = [
         (None, {"fields": ["email", "password"]}),
         ("Personal info", {"fields": ["first_name", "last_name"]}),
-        ("Faculdade", {"fields": ["role", "course"]}),
+        ("Faculdade", {"fields": ["role"]}),
         ("Permissions", {"fields": ["is_staff", "is_superuser"]}),
     ]
 
@@ -72,7 +138,6 @@ class UserAccountAdmin(BaseUserAdmin):
                     "last_name",
                     "email",
                     "role",
-                    "course",
                     "password1",
                     "password2",
                 ],
@@ -82,7 +147,21 @@ class UserAccountAdmin(BaseUserAdmin):
     search_fields = ["email"]
     ordering = ["email"]
     filter_horizontal = []
+    inlines = []
+
+    def get_inlines(self, request, obj=UserAccount):
+        inlines = []
+
+        if obj:
+            if obj.role == Role.STUDENT:
+                inlines.append(StudentInline)
+            elif obj.role == Role.TEACHER:
+                inlines.append(TeacherInline)
+
+        return inlines
 
 
+admin.site.register(Student, StudentAdmin)
+admin.site.register(Teacher, TeacherAdmin)
 admin.site.register(UserAccount, UserAccountAdmin)
 admin.site.unregister(Group)

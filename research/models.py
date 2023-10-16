@@ -1,8 +1,6 @@
 import os
 from django.db import models
-from django.contrib.auth.models import User
-
-from users.models import UserAccount
+from users.models import Student, Teacher, UserAccount
 from django.core.exceptions import ValidationError
 from hashid_field import HashidAutoField
 
@@ -26,9 +24,11 @@ class ThesisProject(models.Model):
 
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    authors = models.ManyToManyField(UserAccount, related_name="research_authors")
+    author = models.ForeignKey(
+        Student, related_name="research_author", on_delete=models.CASCADE
+    )
     advisor = models.ForeignKey(
-        UserAccount,
+        Teacher,
         related_name="research_advisor",
         on_delete=models.CASCADE,
     )
@@ -45,7 +45,7 @@ class ThesisProject(models.Model):
     file = models.FileField(null=True, blank=True)
 
     responsible = models.ForeignKey(
-        UserAccount, verbose_name=("Professor Responsável"), on_delete=models.CASCADE
+        Teacher, verbose_name=("Professor Responsável"), on_delete=models.CASCADE
     )
 
     def __str__(self):
@@ -104,26 +104,52 @@ class FileVersion(models.Model):
         return f"Version {self.version_number} of {self.project.title}"
 
 
+Teacher
+from datetime import timedelta, datetime
+
+
+def get_deadline():
+    return datetime.today() + timedelta(days=20)
+
+
 class Invite(models.Model):
     type = models.PositiveSmallIntegerField(
         choices=ThesisProject.RESEARCH_CHOICES,
         default=ThesisProject.TCC1,
     )
+
     sender = models.ForeignKey(
         UserAccount, on_delete=models.CASCADE, related_name="sent_invites"
     )
+
     receiver = models.ForeignKey(
-        UserAccount, on_delete=models.CASCADE, related_name="received_invites"
+        Student, on_delete=models.CASCADE, related_name="received_invites"
     )
+
+    advisor = models.ForeignKey(
+        Teacher,
+        related_name="research_advisor_invite",
+        on_delete=models.CASCADE,
+    )
+
+    responsible = models.ForeignKey(
+        Teacher,
+        verbose_name=("Professor Responsável"),
+        related_name="research_responsible_invite",
+        on_delete=models.CASCADE,
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     accepted = models.BooleanField(default=False)
+
+    limit_date = models.DateTimeField(blank=False, null=False, default=get_deadline)
 
     def __str__(self):
         invite_type = dict(ThesisProject.RESEARCH_CHOICES).get(
             self.type, "Tipo Desconhecido"
         )
         status = "Aceito" if self.accepted else "Pendente"
-        return f"Convite de {self.sender.first_name} {self.sender.last_name} para {self.receiver.first_name} {self.receiver.last_name} - Tipo: {invite_type} - Status: {status}"
+        return f"Convite de {self.sender.first_name} {self.sender.last_name} para {self.receiver.user.first_name} {self.receiver.user.last_name} - Tipo: {invite_type} - Status: {status}"
 
     class Meta:
         verbose_name = "Convite"
