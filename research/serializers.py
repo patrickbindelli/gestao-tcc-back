@@ -4,38 +4,63 @@ from users.models import Student
 
 
 class InviteSerializer(serializers.ModelSerializer):
-    sender_name = serializers.StringRelatedField(source="sender", read_only=True)
-    receiver_name = serializers.StringRelatedField(source="receiver", read_only=True)
+    advised = serializers.SerializerMethodField()
+    advisor = serializers.SerializerMethodField()
 
-    subject = serializers.SerializerMethodField()
-    status = serializers.SerializerMethodField()
+    def get_advised(self, obj):
+        advised = obj.advised
+        if advised:
+            return {
+                "id": advised.id,
+                "name": f"{advised.user}" if advised.user else "",
+            }
+        return None
 
-    def get_subject(self, obj):
+    def get_advisor(self, obj):
+        advisor = obj.advisor
+        if advisor:
+            return {
+                "id": advisor.id,
+                "name": f"{advisor.user}" if advisor.user else "",
+            }
+        return None
+
+    type = serializers.SerializerMethodField()
+
+    def get_type(self, obj):
         return dict(ThesisProject.RESEARCH_CHOICES).get(obj.type)
-
-    def get_status(self, obj):
-        return "Aceito" if obj.accepted else "Pendente"
 
     class Meta:
         model = Invite
         fields = [
             "id",
-            "subject",
-            "sender_name",
-            "receiver_name",
+            "type",
+            "advisor",
+            "advised",
             "created_at",
             "limit_date",
-            "status",
+            "accepted",
         ]
 
 
 class ThesisProjectSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
-    responsible = serializers.SerializerMethodField()
-    advisor_name = serializers.StringRelatedField(source="advisor", read_only=True)
-    subject = serializers.SerializerMethodField()
+    advisor = serializers.SerializerMethodField()
+    type = serializers.SerializerMethodField()
+    file_name = serializers.SerializerMethodField()
+    file_size = serializers.SerializerMethodField()
 
-    def get_subject(self, obj):
+    def get_file_name(self, obj):
+        if obj.file:
+            return obj.file.name
+        return None
+
+    def get_file_size(self, obj):
+        if obj.file:
+            return obj.file.size
+        return None
+
+    def get_type(self, obj):
         return dict(ThesisProject.RESEARCH_CHOICES).get(obj.type)
 
     def get_author(self, obj):
@@ -47,12 +72,12 @@ class ThesisProjectSerializer(serializers.ModelSerializer):
             }
         return None
 
-    def get_responsible(self, obj):
-        responsible = obj.responsible
-        if responsible:
+    def get_advisor(self, obj):
+        advisor = obj.advisor
+        if advisor:
             return {
-                "id": responsible.id,
-                "name": f"{responsible.user}" if responsible.user else "",
+                "id": advisor.id,
+                "name": f"{advisor.user}" if advisor.user else "",
             }
         return None
 
@@ -62,14 +87,15 @@ class ThesisProjectSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
-            "subject",
+            "type",
             "author",
-            "advisor_name",
+            "advisor",
             "approved",
             "approved_at",
             "committee",
             "defense_date",
             "invite",
-            "responsible",
             "file",
+            "file_name",
+            "file_size",
         ]

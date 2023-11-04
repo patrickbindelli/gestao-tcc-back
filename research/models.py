@@ -3,6 +3,7 @@ from django.db import models
 from users.models import Student, Teacher, UserAccount
 from django.core.exceptions import ValidationError
 from hashid_field import HashidAutoField
+from datetime import timedelta, datetime
 
 
 class Course(models.Model):
@@ -43,10 +44,6 @@ class ThesisProject(models.Model):
     invite = models.ForeignKey("Invite", on_delete=models.CASCADE)
 
     file = models.FileField(null=True, blank=True)
-
-    responsible = models.ForeignKey(
-        Teacher, verbose_name=("Professor Responsável"), on_delete=models.CASCADE
-    )
 
     def __str__(self):
         return self.title
@@ -104,10 +101,6 @@ class FileVersion(models.Model):
         return f"Version {self.version_number} of {self.project.title}"
 
 
-Teacher
-from datetime import timedelta, datetime
-
-
 def get_deadline():
     return datetime.today() + timedelta(days=20)
 
@@ -118,24 +111,13 @@ class Invite(models.Model):
         default=ThesisProject.TCC1,
     )
 
-    sender = models.ForeignKey(
-        UserAccount, on_delete=models.CASCADE, related_name="sent_invites"
-    )
-
-    receiver = models.ForeignKey(
+    advised = models.ForeignKey(
         Student, on_delete=models.CASCADE, related_name="received_invites"
     )
 
     advisor = models.ForeignKey(
         Teacher,
         related_name="research_advisor_invite",
-        on_delete=models.CASCADE,
-    )
-
-    responsible = models.ForeignKey(
-        Teacher,
-        verbose_name=("Professor Responsável"),
-        related_name="research_responsible_invite",
         on_delete=models.CASCADE,
     )
 
@@ -149,7 +131,7 @@ class Invite(models.Model):
             self.type, "Tipo Desconhecido"
         )
         status = "Aceito" if self.accepted else "Pendente"
-        return f"Convite de {self.sender.first_name} {self.sender.last_name} para {self.receiver.user.first_name} {self.receiver.user.last_name} - Tipo: {invite_type} - Status: {status}"
+        return f"Convite de Pesquisa | Oientador: {self.advisor.user} | Orientado: {self.advised.user} | Tipo: {invite_type} | Status: {status}"
 
     class Meta:
         verbose_name = "Convite"

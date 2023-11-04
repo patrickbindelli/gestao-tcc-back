@@ -3,7 +3,7 @@ from .serializers import UsefulFileSerializer, UsefulLinkSerializer
 from rest_framework import viewsets
 
 
-class UsefulFilesViewSet(viewsets.ModelViewSet):
+class UsefulFilesViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Lista e cria arquivos de utilidade.
     """
@@ -12,7 +12,7 @@ class UsefulFilesViewSet(viewsets.ModelViewSet):
     serializer_class = UsefulFileSerializer
 
 
-class UsefulLinksViewSet(viewsets.ModelViewSet):
+class UsefulLinksViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Lista e cria arquivos de utilidade.
     """

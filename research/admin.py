@@ -6,41 +6,41 @@ from django.core.exceptions import ValidationError
 from django.contrib.admin import widgets
 
 
-class FileVersionInlineForm(forms.ModelForm):
-    class Meta:
-        model = FileVersion
-        exclude = ["comments"]
+# class FileVersionInlineForm(forms.ModelForm):
+#     class Meta:
+#         model = FileVersion
+#         exclude = ["comments"]
 
 
-class FileVersionInline(admin.TabularInline):
-    model = FileVersion
-    extra = 1
-    form = FileVersionInlineForm
+# class FileVersionInline(admin.TabularInline):
+#     model = FileVersion
+#     extra = 1
+#     form = FileVersionInlineForm
 
 
 class ThesisProjectAdmin(admin.ModelAdmin):
     list_display = ("title", "description", "approved", "approved_at", "type")
-    inlines = [FileVersionInline]
+    # inlines = [FileVersionInline]
+    readonly_fields = ["approved_at"]
     search_fields = [
         "advisor",
+        "author",
     ]
-    autocomplete_fields = ["advisor"]
-
+    autocomplete_fields = ["advisor", "author"]
     raw_id_fields = ("advisor",)
 
 
 def accept_invite_and_create_research(modeladmin, request, queryset):
     for invite in queryset:
         if not invite.accepted:
-            research_title = f"Pesquisa ({invite.type}) para {invite.receiver.user}"
+            research_title = f"Pesquisa de {invite.advised.user}"
 
             research = ThesisProject.objects.create(
                 invite=invite,
                 title=research_title,
                 type=invite.type,
                 advisor=invite.advisor,
-                responsible=invite.responsible,
-                author=invite.receiver,
+                author=invite.advised,
             )
 
             research.save()
@@ -55,19 +55,12 @@ accept_invite_and_create_research.short_description = "Aceitar convite e criar p
 class InviteAdmin(admin.ModelAdmin):
     actions = [accept_invite_and_create_research]
     readonly_fields = ["limit_date", "accepted"]
-    exclude = ["sender"]
 
     search_fields = [
-        "sender",
-        "receiver",
+        "advisor",
+        "advised",
     ]
-    autocomplete_fields = ["receiver", "advisor", "responsible"]
-
-    def save_model(self, request, obj, form, change):
-        if not change:
-            print(request.user)
-            obj.sender = request.user
-        obj.save()
+    autocomplete_fields = ["advised", "advisor"]
 
 
 admin.site.register(ThesisProject, ThesisProjectAdmin)
